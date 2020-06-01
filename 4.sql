@@ -10,7 +10,7 @@ FROM
 WHERE
 	a.business_no in (select t.business_no from (select max(id) maxid,business_no from tt_rh_user_base_info group by business_no )t join tt_rh_user_base_info t1 on t.maxid=t1.id where t1.account_state !=3 )
 GROUP BY
-	business_no having chayue-qishu<=1;
+	business_no having abs(chayue-qishu)>1;
 	
 	
 	
@@ -70,4 +70,4 @@ WHERE 1=1
 
 select "Rule405",id,business_no,current_overdue_money,plan_repay_money,plan_repay_money,365*100*((current_overdue_money+sum(real_repay_money)-credit_money)/credit_money/DATEDIFF(max(plan_dealine),account_date)) yuqi
 from tt_rh_user_base_info where account_state='2' 
-group by business_no having yuqi>24
+group by business_no having yuqi>24;
