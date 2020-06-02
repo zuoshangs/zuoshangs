@@ -3,14 +3,27 @@
 #对如下内容进行校验：开户日期所在月到到期日所在月之间，每个月均要有一条数据。
 
 SELECT "Rule401",a.business_no,account_state,
+	TIMESTAMPDIFF(MONTH,str_to_date( account_date, '%Y%m%d' ),if(str_to_date( order_deadline, '%Y%m%d' )>now(),now(),str_to_date( order_deadline, '%Y%m%d' ))) chayue,
+	count( 1 ) qishu 
+FROM
+	tt_rh_user_base_info  a
+WHERE
+	a.business_no in (select t.business_no from (select max(id) maxid,business_no from tt_rh_user_base_info group by business_no )t join tt_rh_user_base_info t1 on t.maxid=t1.id where (t1.account_state =1  or (t1.account_state =2 and t1.order_deadline>now())))
+GROUP BY
+	business_no having abs(chayue-qishu)>2 
+	
+union all (
+SELECT "Rule401",a.business_no,account_state,
 	TIMESTAMPDIFF(MONTH,str_to_date( account_date, '%Y%m%d' ),if(str_to_date( order_deadline, '%Y%m%d' )>now(),str_to_date( order_deadline, '%Y%m%d' ),now())) chayue,
 	count( 1 ) qishu 
 FROM
 	tt_rh_user_base_info  a
 WHERE
-	a.business_no in (select t.business_no from (select max(id) maxid,business_no from tt_rh_user_base_info group by business_no )t join tt_rh_user_base_info t1 on t.maxid=t1.id where t1.account_state !=3 )
+	a.business_no in (select t.business_no from (select max(id) maxid,business_no from tt_rh_user_base_info group by business_no )t join tt_rh_user_base_info t1 on t.maxid=t1.id where t1.account_state =2 and t1.order_deadline<now())
 GROUP BY
-	business_no having abs(chayue-qishu)>1;
+	business_no having abs(chayue-qishu)>2
+	)
+;
 	
 	
 	
